@@ -72,12 +72,18 @@
 - Optional ZFS/btrfs subvolume support later
 
 ### 4.5 Stage3 / Portage Prep
-- Stage3 URL fallback: if primary mirror fails, try secondary mirror before aborting
+- Check required connectivity policy: if `require_network`, verify active network before continuing
+- Stage3 URL selection:
+  - If offline is allowed and local stage3 tarball exists, use it
+  - Otherwise download from `STAGE3_URL` in config, or auto-detect from mirrors
+  - Mirror fallback: if one mirror fails, try the next configured mirror before aborting
 - Verify at least 2 GB free in `/mnt/gentoo` after mount before extracting stage3
+- Validate tarball checksum if provided
 - Configure `--binhost` mirror, if available
-- Extract stage3 tarball
-- Copy resolv.conf and DNS info
-- Mount required filesystems in order
+- Extract stage3 tarball with preserved extended attribs
+- Validate mountpoints in order: `/mnt/gentoo/dev`, `/proc`, `/sys`, `/run`
+- Copy resolv.conf and DNS info, validate nameserver line presence
+- Handle extraction failures gracefully: provide a "Retry" or "Ignore" option, log full error
 
 ### 4.6 Portage / make.conf / Mirrors
 - Ask CPU microarchitecture or detect
@@ -138,7 +144,41 @@
 
 ---
 
-## 5. UI Design and Tooling
+## 5. Network Behavior
+- The installer defines one strict default: network is required unless explicitly overridden in config
+- Supported modes:
+  - `require_network` — abort if network is unavailable at start
+  - `allow_offline` — use pre-bundled stage3/binhost or skip sync
+- If live network is available but slow:
+  - Show a warning dialog with expected wait time
+  - Let the user skip optional steps: mirror selection, binhost, desktop preset
+- Network failure in the middle of the run:
+  - Write a resume marker: “Resume from when you are back online?”
+  - Stage mark allow safe reentry: no destructive steps are repeated
+- When `allow_offline` is used:
+  - Desktop preset download is skipped
+  - `emerge --sync` is skipped
+  - binhost is skipped
+  - Kernel/wallpaper presets must be offline-safe
+
+---
+
+## 6. Disk Safety
+- Stage 4.2 and 4.3 include an extra confirmation gate before destructive operations
+- Before any destructive operation:
+  ```
+  1. List target devices
+  2. Display partition table preview
+  3. Confirm wipe
+  ```
+- Stage 4.3 sets a lock file `/tmp/gentoo-install.lock` while running
+- All partition operations are logged with timestamped copy of `parted` output
+- Rollback notes are stored in `/var/log/gentoo-install.log`
+- If the user cancels at the confirmation gate, roll back the mount changes and preserve existing disk state where possible
+
+---
+
+## 7. UI Design and Tooling
 
 - Use `dialog` for all interactive components; avoid `whiptail` for consistency and live-media compatibility
 - One question per screen — no stacked prompts
@@ -160,7 +200,7 @@
 
 ---
 
-## 6. Safety Mechanisms
+## 8. Safety Mechanisms
 
 - Root lockfile during destructive operations
 - Re-run detection on interrupted installs
@@ -170,17 +210,17 @@
 
 ---
 
-## 7. Beginner UX
+## 9. Beginner UX
 
 - Explain terms inline using `ui.sh`
 - One question at a time
-- Sensible defaults prefilled when possible
+- Sensible defaults pre-filled when possible
 - Visible progress indicators
 - Explicit “This will erase disk X” confirmation
 
 ---
 
-## 8. Testing Plan
+## 10. Testing Plan
 
 1. VM matrix:
    - UEFI + ext4
@@ -193,7 +233,7 @@
 
 ---
 
-## 9. Deliverables
+## 11. Deliverables
 
 - Working installer script
 - README for live environment usage
