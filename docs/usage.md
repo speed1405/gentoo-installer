@@ -11,7 +11,7 @@ A guided Bash installer for Gentoo, designed for beginners. It covers:
 - optional dwm + polybar preset
 - logging and resume
 
-It is **not** a one-size-fits-all Gentoo tool. It targets UEFI/BIUS systems with GPT and standard hardware.
+It is **not** a one-size-fits-all Gentoo tool. It targets UEFI/BIOS systems with GPT and standard hardware.
 
 ---
 
@@ -122,6 +122,30 @@ Written to `/root/gentoo-first-boot-checklist` in the installed system:
 - Review `/etc/fstab`
 - Set networking (`dhcpcd` or `NetworkManager`)
 - Enable services as needed
+
+---
+
+## Testing addendum
+
+### VM matrix
+
+- UEFI + ext4
+- BIOS + btrfs
+- GPT + systemd-boot
+
+### Notes
+
+- For Btrfs, make sure `btrfs-progs` is installed in the live environment
+- For ZFS, installer ZFS support is not implemented yet; use Btrfs subvolumes for now
+- For systemd-boot, the ESP must be mounted at `/boot`
+- For BIOS + GPT, ensure the boot flag is set on the boot partition
+
+### Simulated interruption test
+
+1. Start guided install
+2. Kill the terminal during a stage
+3. Remove `/tmp/gentoo-install.lock`
+4. Re-run; confirm earlier stages are skipped and later stages resume
 
 ---
 
