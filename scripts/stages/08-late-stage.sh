@@ -55,7 +55,9 @@ run() {
     log "[late] Installing desktop preset: $INSTALL_DESKTOP"
     case "$INSTALL_DESKTOP" in
       dwm) bash "$STAGES_DIR/11-desktop.sh" ;;
-      *) log "[late] Non-dwm desktop selected; no preset installer yet" ;;
+      sway) bash "$STAGES_DIR/12-sway.sh" ;;
+      xfce4) bash "$STAGES_DIR/13-xfce4.sh" ;;
+      *) log "[late] $INSTALL_DESKTOP preset not implemented yet" ;;
     esac
   fi
 
