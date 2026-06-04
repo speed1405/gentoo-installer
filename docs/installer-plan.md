@@ -123,15 +123,17 @@
 ### 4.11 Desktop Environment / Window Manager (Post-Base)
 - Optional, triggered after base bootstrap or during first-boot online setup
 - Presets:
-  - dwm — minimal, source build, patch-ready; install xorg-server, libX11, dmenu, st defaults
+  - dwm + polybar + feh background — source build, patch-ready preset
   - sway — Wayland, good defaults
   - xfce4 — full DE, beginner-friendly
   - gnome / kde — heavy, warn about build time
-- dwm-specific handling:
-  - Enable elogind and seatd automatically
-  - Provide systemd user session or .xinitrc fallback
-  - Pull a known-good config tarball unless skipped
-  - Document `make clean install` recompile workflow for `config.h` edits
+- dwm + polybar preset includes:
+  - xorg-server, libX11, libXft, libXinerama, freetype, fontconfig, st, dmenu, polybar, feh, nitrogen or feh for wallpaper
+  - elogind and seatd enabled automatically
+  - systemd user session or .xinitrc fallback
+  - pulls a maintained config tarball unless skipped
+  - documents `make clean install` recompile workflow for `config.h` edits
+  - sets a default wallpaper under `~/Pictures/wallpaper.jpg`
 - Design rule: do not bake a display manager into base; use startx for dwm/sway
 
 ---
