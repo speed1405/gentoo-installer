@@ -77,14 +77,17 @@ run_guided() {
   set_status "stage3" 45
   bash "$STAGES_DIR/04-stage3.sh"
 
-  set_status "portage" 60
+  set_status "portage" 55
   bash "$STAGES_DIR/05-portage.sh"
 
-  set_status "kernel" 75
+  set_status "kernel" 70
   bash "$STAGES_DIR/06-kernel.sh"
 
   set_status "base_setup" 85
   bash "$STAGES_DIR/07-base.sh"
+
+  set_status "late_stage" 90
+  bash "$STAGES_DIR/08-late-stage.sh"
 
   set_status "validation" 95
   bash "$STAGES_DIR/09-verify.sh"
@@ -95,7 +98,6 @@ run_guided() {
 
 run_auto() {
   [[ -f "$CONFIG_FILE" ]] || die "Config file not found: $CONFIG_FILE"
-  # Auto mode runs each stage without UI prompts
   for stage in "$STAGES_DIR"/*.sh; do
     log "AUTO: Running $(basename "$stage")"
     DISABLE_UI=1 bash "$stage"

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # scripts/stages/05-portage.sh
 set -euo pipefail
 source "$LIB_DIR/logging.sh"
@@ -20,7 +21,12 @@ EOF
     echo 'FETCHCOMMAND="curl -L -O"' >> "$MNT_ROOT/etc/portage/make.conf"
   fi
 
-  chroot "$MNT_ROOT" emerge --sync || true
+  if [[ "${CONNECTIVITY:-require_network}" == "require_network" ]]; then
+    chroot "$MNT_ROOT" emerge --sync || true
+  else
+    log "[portage] allow_offline set; skipping emerge --sync"
+  fi
+
   log "[portage] Done"
 }
 
