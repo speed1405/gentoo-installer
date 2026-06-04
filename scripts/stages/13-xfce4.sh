@@ -29,11 +29,14 @@ install_xfce4() {
     rm -rf "$tmpdir"
   else
     chroot "$MNT_ROOT" bash -lc "mkdir -p ${cfg_dest}"
-    chroot "$MNT_ROOT" bash -lc "cat > ${cfg_dest}/xfce4-session.rc <<'EOF'
+    chroot "$MNT_ROOT" bash -lc "cat > ${cfg_dest}/xfce4-session.rc <<'TXT'
 # Beginner-friendly default: prefer modern look
-# User can change this later in Settings > Session and Startup
-EOF"
+# Change later in Settings > Session and Startup
+TXT"
   fi
+
+  # enable display manager
+  chroot "$MNT_ROOT" systemctl enable lightdm || true
 }
 
 run() {
@@ -42,9 +45,5 @@ run() {
   : "${USERNAME:=user}"
   install_xfce4
 
-  chroot "$MNT_ROOT" systemctl enable lightdm || true
-
   log "[xfce4] xfce4 preset installed"
 }
-
-if [[ "${BASH_SOURCE[0]}" == "$0" ]; then run; fi

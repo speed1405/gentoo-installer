@@ -37,5 +37,3 @@ EOF
 
   log "[base] Done"
 }
-
-if [[ "${BASH_SOURCE[0]}" == "$0" ]; then run; fi
