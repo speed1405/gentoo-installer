@@ -21,23 +21,52 @@ install_gpu_drivers() {
   esac
 }
 
+prompt_desktop() {
+  local choice
+  choice=$(ui_menu "Desktop" "Choose a desktop setup:" \
+    "none" "None (skip)" \
+    "dwm" "dwm + polybar (minimal)" \
+    "sway" "Sway Wayland" \
+    "xfce4" "Xfce4" \
+    "gnome" "GNOME (heavy)" \
+    "kde" "KDE Plasma (heavy)") || true
+  echo "${choice:-${INSTALL_DESKTOP:-none}}"
+}
+
 run() {
   log "[late] Running late stage options"
   : "${MNT_ROOT:=/mnt/gentoo}"
 
-  if [[ "${INSTALL_DESKTOP:-none}" != "none" ]]; then
-    bash "$STAGES_DIR/11-desktop.sh"
+  if [[ "${INSTALL_DESKTOP:-}" == "none" || -z "${INSTALL_DESKTOP:-}" ]]; then
+    DESKTOP_CHOICE=$(prompt_desktop)
+    export DESKTOP_CHOICE
+    case "$DESKTOP_CHOICE" in
+      dwm|sway|xfce4|gnome|kde)
+        INSTALL_DESKTOP="$DESKTOP_CHOICE"
+        export INSTALL_DESKTOP
+        ;;
+      *)
+        log "[late] Skipping desktop install by user choice"
+        ;;
+    esac
   fi
 
-  # Firmware prompt is handled in 09-verify.sh; here we expose the prompt for advanced users only
+  if [[ "${INSTALL_DESKTOP:-none}" != "none" ]]; then
+    log "[late] Installing desktop preset: $INSTALL_DESKTOP"
+    case "$INSTALL_DESKTOP" in
+      dwm) bash "$STAGES_DIR/11-desktop.sh" ;;
+      *) log "[late] Non-dwm desktop selected; no preset installer yet" ;;
+    esac
+  fi
+
   if ui_yesno "GPU Drivers" "Do you want to install GPU drivers now?"; then
     local card
     card=$(ui_menu "GPU" "Select card type:" \
       "intel" "Intel" \
       "amd" "AMD" \
       "nvidia" "NVIDIA" \
-      "other" "Other")
-    install_gpu_drivers "$card"
+      "other" "Other") || true
+    install_gpu_drivers "${card:-other}"
   fi
 
   log "[late] Done"
