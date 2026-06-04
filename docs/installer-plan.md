@@ -60,6 +60,7 @@
   - UEFI guided layout
   - BIOS guided layout
   - Entire disk with swap
+- Mark EFI System Partition with `boot` and `esp` flags on all GPT/UEFI layouts
 - Allow custom partitions for advanced users
 - NEVER run destructive operations without one more explicit confirmation
 
@@ -71,6 +72,8 @@
 - Optional ZFS/btrfs subvolume support later
 
 ### 4.5 Stage3 / Portage Prep
+- Stage3 URL fallback: if primary mirror fails, try secondary mirror before aborting
+- Verify at least 2 GB free in `/mnt/gentoo` after mount before extracting stage3
 - Configure `--binhost` mirror, if available
 - Extract stage3 tarball
 - Copy resolv.conf and DNS info
@@ -81,6 +84,7 @@
 - Set `COMMON_FLAGS` based on CPU
 - Enable recommended global USE flags for beginners
 - Configure `GENTOO_MIRRORS` with regional mirror selection
+- Define connectivity policy in config: `require_network` vs `allow_offline`
 - Sync Portage
 
 ### 4.7 Kernel and Boot
@@ -89,8 +93,9 @@
   - Distribution kernels
   - Manual `genkernel` workflow
 - Build initramfs when needed
+- Validate `/etc/fstab` matches live mounts BEFORE installing bootloader
+- Copy live `/lib/firmware` to installed root before reboot so hardware is supported on first boot
 - Install and configure GRUB or systemd-boot
-- Validate `/etc/fstab` from live stage
 
 ### 4.8 Base System Bootstrap
 - Prompt for:
@@ -107,6 +112,7 @@
 ### 4.9 Post-Install Verification
 - Print a “first boot checklist”
 - List files to review before reboot
+- Verify `/etc/portage/make.conf` matches live environment selections before first `emerge --sync`
 - Warn about changing from `liveuser` to installed environment
 
 ### 4.10 Late Stage Options
