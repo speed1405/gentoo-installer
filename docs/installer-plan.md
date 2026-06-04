@@ -136,7 +136,29 @@
 
 ---
 
-## 5. Safety Mechanisms
+## 5. UI Design and Tooling
+
+- Use `dialog` for all interactive components; avoid `whiptail` for consistency and live-media compatibility
+- One question per screen — no stacked prompts
+- Always include a **[Cancel]** button that exits cleanly and writes a resume-able log
+- Default values pre-filled in text inputs (e.g., hostname = `gentoo`)
+- Inline help via **F1** or a `[Help]` button, not external man pages
+- **Visual hierarchy:**
+  - Errors: red, exact fix text
+  - Warnings: yellow, actionable
+  - Progress: gauge bar with percentage + step name
+  - Success: green, one-line confirmation with log path
+- **Widget mapping:**
+  - Disk wipe confirmation: `--yesno` with ALL-CAPS warning
+  - Partition selection: `--radiolist` with size/type/flag columns
+  - Bootloader choice: `--menu`
+  - Passwords: `--passwordbox` (masked, no echo)
+- **Progress flow:** Stages update a temp status file; parent UI repaints a gauge without spawning new dialogs
+- **Beginner reinforcement:** after each step, print a one-line “What just happened” summary before the next prompt
+
+---
+
+## 6. Safety Mechanisms
 
 - Root lockfile during destructive operations
 - Re-run detection on interrupted installs
@@ -146,7 +168,7 @@
 
 ---
 
-## 6. Beginner UX
+## 7. Beginner UX
 
 - Explain terms inline using `ui.sh`
 - One question at a time
@@ -156,7 +178,7 @@
 
 ---
 
-## 7. Testing Plan
+## 8. Testing Plan
 
 1. VM matrix:
    - UEFI + ext4
@@ -169,7 +191,7 @@
 
 ---
 
-## 8. Deliverables
+## 9. Deliverables
 
 - Working installer script
 - README for live environment usage
