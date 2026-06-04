@@ -120,6 +120,20 @@
 - GPU drivers prompted after reboot, not during base install
 - Firmware packages prompted when hardware is detected
 
+### 4.11 Desktop Environment / Window Manager (Post-Base)
+- Optional, triggered after base bootstrap or during first-boot online setup
+- Presets:
+  - dwm — minimal, source build, patch-ready; install xorg-server, libX11, dmenu, st defaults
+  - sway — Wayland, good defaults
+  - xfce4 — full DE, beginner-friendly
+  - gnome / kde — heavy, warn about build time
+- dwm-specific handling:
+  - Enable elogind and seatd automatically
+  - Provide systemd user session or .xinitrc fallback
+  - Pull a known-good config tarball unless skipped
+  - Document `make clean install` recompile workflow for `config.h` edits
+- Design rule: do not bake a display manager into base; use startx for dwm/sway
+
 ---
 
 ## 5. Safety Mechanisms
