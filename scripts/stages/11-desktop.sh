@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # scripts/stages/11-desktop.sh — dwm + polybar preset
 set -euo pipefail
 source "$LIB_DIR/logging.sh"
@@ -12,28 +13,41 @@ install_dwm() {
     x11-misc/xtrlock \
     >=x11-terms/st-0.8.4-r1 \
     >=media-fonts/terminus-font \
-    || true
+    || die "Failed to emerge dwm preset"
 
   chroot "$MNT_ROOT" bash -lc "eselect font enable ter-* || true"
 
-  # Defaults user config
+  local user_home
+  user_home=$(eval echo "~${USERNAME:-user}")
+
   local cfg_src="$INSTALLER_DIR/desktop/dwm-config.tar.gz"
-  local cfg_dest="/home/${USERNAME:-user}/.dwm"
+  local cfg_dest="${user_home}/.dwm"
 
   if [[ -f "$cfg_src" ]]; then
     chroot "$MNT_ROOT" mkdir -p "$cfg_dest"
-    chroot "$MNT_ROOT" tar xzf "$cfg_src" -C "$cfg_dest" 2>/dev/null || true
+    # Write files directly rather than relying on tar destination semantics
+    tmpdir=$(mktemp -d)
+    tar xzf "$cfg_src" -C "$tmpdir"
+    find "$tmpdir" -mindepth 1 -maxdepth 1 -exec cp -a {} "$MNT_ROOT${cfg_dest}/" \;
     chroot "$MNT_ROOT" chown -R "${USERNAME:-user}:${USERNAME:-user}" "$cfg_dest"
+    rm -rf "$tmpdir"
   else
     # Fallback: basic autostart and xinitrc
-    chroot "$MNT_ROOT" bash -lc "mkdir -p /home/${USERNAME:-user}/.dwm"
-    chroot "$MNT_ROOT" bash -lc "cat > /home/${USERNAME:-user}/.dwm/autostart.sh <<'EOF'\n#!/bin/sh\nfeh --bg-scale /home/${USERNAME:-user}/Pictures/wallpaper.jpg || true\nEOF"
-    chroot "$MNT_ROOT" bash -lc "chmod +x /home/${USERNAME:-user}/.dwm/autostart.sh"
+    chroot "$MNT_ROOT" bash -lc "mkdir -p ${cfg_dest}"
+    chroot "$MNT_ROOT" bash -lc "cat > ${user_home}/.dwm/autostart.sh <<'EOF'
+#!/bin/sh
+feh --bg-scale ${user_home}/Pictures/wallpaper.jpg || true
+EOF"
+    chroot "$MNT_ROOT" bash -lc "chmod +x ${user_home}/.dwm/autostart.sh"
   fi
 
-  # .xinitrc if missing
-  chroot "$MNT_ROOT" bash -lc "cat > /home/${USERNAME:-user}/.xinitrc <<'EOF'\n#!/bin/sh\nxrdb -merge ~/.Xresources\nexec dwm\nEOF"
-  chroot "$MNT_ROOT" bash -lc "chmod +x /home/${USERNAME:-user}/.xinitrc"
+  # .xinitrc
+  chroot "$MNT_ROOT" bash -lc "cat > ${user_home}/.xinitrc <<'EOF'
+#!/bin/sh
+xrdb -merge ~/.Xresources
+exec dwm
+EOF"
+  chroot "$MNT_ROOT" bash -lc "chmod +x ${user_home}/.xinitrc"
 }
 
 run() {
